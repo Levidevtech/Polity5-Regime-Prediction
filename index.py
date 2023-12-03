@@ -19,7 +19,8 @@ polity5_df['change_in_polity'] = polity5_df['polity'].diff().fillna(0)
 polity5_df['drastic_change'] = np.abs(polity5_df['change_in_polity']) > 2
 
 # Selecting features and target variable
-features = ['democ', 'autoc', 'polity']
+# democ, autoc, polity, polity2, durable, xrreg, xrcomp, xropen, xconst, parreg, parcomp, exrec, exconst, polcomp, change, and regtrans
+features = ['democ', 'autoc', 'polity', 'polity2' , 'xrreg', 'xrcomp', 'xropen', 'xconst', 'parreg', 'parcomp', 'exrec', 'exconst', 'polcomp', 'change' ]
 target = 'drastic_change'
 
 # Splitting the data
@@ -42,3 +43,16 @@ y_pred = clf.predict(X_test_scaled)
 report = classification_report(y_test, y_pred)
 
 print(report)
+
+# Predict the probability of drastic change for a country
+# Get the data for the country
+country_df = polity5_df[polity5_df['country'] == 'India']
+# Get the features
+country_features = country_df[features]
+# Standardize the features
+country_features_scaled = scaler.transform(country_features)
+# Predict the probability of drastic change
+prob = clf.predict_proba(country_features_scaled)[0][1]
+print("Probability of drastic change:", prob)
+
+
