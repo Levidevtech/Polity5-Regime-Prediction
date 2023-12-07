@@ -17,13 +17,10 @@ class Preperation:
         print(p5.isnull().sum())
         # Specify the path for the new CSV file
         csv_file_path = 'polity5_cleaned.csv'
-
         # Write the data to a CSV file
         p5.to_csv(csv_file_path, index=False)
-
-        return 
+        
     
-
     def fill_durable(self,dataframe):
         current_value = 0
         last_polity_score = None
@@ -38,12 +35,6 @@ class Preperation:
                 dataframe.at[index, 'durable'] = current_value
                 current_value += 1
                 last_polity_score = polity_score
-
-
-
-
-
-
 
 p = Preperation()
 p.Prepare_Data()
