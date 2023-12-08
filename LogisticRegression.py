@@ -5,20 +5,45 @@ from sklearn.metrics import classification_report
 from rescaled import Rescaler
 from normalized import Normalize
 
-# Function to calculate regime change within the same country for scaled data
+# Revised function to calculate regime change for scaled data
 def calculate_regime_change_scaled(group):
-    group['RegimeChangeHappened'] = ((group['polity2'].shift(2) <= 9) & (group['polity2'] > 10)) | \
-                                   ((group['polity2'].shift(2) >= 11) & (group['polity2'] < 10))
-    group['RegimeChangeHappened'] = group['RegimeChangeHappened'].astype(int)
+    autocratic_max = 9
+    democratic_min = 11
+
+    # Shift 'polity2' for previous years
+    for i in range(1, 5):
+        group[f'polity2_lag_{i}'] = group['polity2'].shift(i)
+
+    # Check for regime change over a span of 2-4 years
+    for i in range(2, 5):
+        group[f'regime_change_{i}'] = (((group[f'polity2_lag_{i}'] <= autocratic_max) & (group['polity2'] >= democratic_min)) |
+                                       ((group[f'polity2_lag_{i}'] >= democratic_min) & (group['polity2'] <= autocratic_max)))
+    
+    # Combine regime change flags for 2-4 year spans into a single column
+    group['RegimeChangeHappened'] = group[[f'regime_change_{i}' for i in range(2, 5)]].any(axis=1).astype(int)
+
+    # Drop intermediate columns
+    group.drop([f'polity2_lag_{i}' for i in range(1, 5)] + [f'regime_change_{i}' for i in range(2, 5)], axis=1, inplace=True)
+    
     return group
 
-# Function to calculate regime change within the same country for normalized data
+# Revised function to calculate regime change for normalized data
 def calculate_regime_change_normalized(group):
+    # Define normalized thresholds
     threshold_auto_normalized = -0.1
     threshold_demo_normalized = 0.1
-    group['RegimeChangeHappened'] = ((group['polity2'].shift(2) <= threshold_auto_normalized) & (group['polity2'] > threshold_demo_normalized)) | \
-                                   ((group['polity2'].shift(2) >= threshold_demo_normalized) & (group['polity2'] < threshold_auto_normalized))
-    group['RegimeChangeHappened'] = group['RegimeChangeHappened'].astype(int)
+
+    # Similar logic as for scaled data but using normalized thresholds
+    for i in range(1, 5):
+        group[f'polity2_lag_{i}'] = group['polity2'].shift(i)
+
+    for i in range(2, 5):
+        group[f'regime_change_{i}'] = (((group[f'polity2_lag_{i}'] <= threshold_auto_normalized) & (group['polity2'] > threshold_demo_normalized)) |
+                                                  ((group[f'polity2_lag_{i}'] >= threshold_demo_normalized) & (group['polity2'] < threshold_auto_normalized)))
+    
+    group['RegimeChangeHappened'] = group[[f'regime_change_{i}' for i in range(2, 5)]].any(axis=1).astype(int)
+    group.drop([f'polity2_lag_{i}' for i in range(1, 5)] + [f'regime_change_{i}' for i in range(2, 5)], axis=1, inplace=True)
+    
     return group
 
 # Load the dataset
