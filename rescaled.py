@@ -45,12 +45,6 @@ class Rescaler:
         
         return rescaled_df
 
-        # summarize transformed data
-        numpy.set_printoptions(precision=2)
-        print(rescaledX[0:6,:])
-        print(unscaled[0:6,:])
-        print(shifted_data)
-
 
 r = Rescaler()
 print(r.rescale())
