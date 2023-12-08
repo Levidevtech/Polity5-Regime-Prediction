@@ -1,34 +1,20 @@
 import pandas as pd
-import numpy as np
 from sklearn.preprocessing import Normalizer
 
 class Normalize:
+    def normalize(self, data):
+        # Custom normalization for 'polity2' column
+        if 'polity2' in data.columns:
+            data['polity2'] = data['polity2'] / 10
+        
+        # Standard normalization for other columns
+        columns_to_exclude = [col for col in ['country', 'year', 'normalized_polity2'] if col in data.columns]
+        excluded_data = data.loc[:, ~data.columns.isin(columns_to_exclude)]
 
-    def normalize(self):
-        # Load dataset
-        file_path = 'polity5_cleaned.csv'
-        polity5 = pd.read_csv(file_path)
+        if not excluded_data.empty:
+            scaler = Normalizer().fit(excluded_data)
+            normalized_excluded_data = scaler.transform(excluded_data)
+            normalized_excluded_data = pd.DataFrame(normalized_excluded_data, columns=excluded_data.columns)
+            data = pd.concat([data[columns_to_exclude], normalized_excluded_data], axis=1)
 
-        # Exclude country and year to get the min value
-        columns_to_exclude = ['country', 'year']
-        excluded_data = polity5.loc[:, ~polity5.columns.isin(columns_to_exclude)]
-        min_values = excluded_data.min()
-        max_values = excluded_data.max()
-
-        # Shift data
-        shifted_data = excluded_data - min_values
-
-        # Normalize data
-        scaler = Normalizer().fit(shifted_data)
-        normalizedX = scaler.transform(shifted_data)
-
-        # Summarize transformed data
-        np.set_printoptions(precision=2)
-        print(normalizedX[0:6, :])
-
-        return normalizedX
-
-
-n = Normalize()
-n.normalize()
-
+        return data
