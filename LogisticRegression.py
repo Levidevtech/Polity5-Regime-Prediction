@@ -1,9 +1,10 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, confusion_matrix
 from rescaled import Rescaler
 from normalized import Normalize
+import matplotlib.pyplot as plt
 
 # Revised function to calculate regime change for scaled data
 def calculate_regime_change_scaled(group):
@@ -24,6 +25,8 @@ def calculate_regime_change_scaled(group):
 
     # Drop intermediate columns
     group.drop([f'polity2_lag_{i}' for i in range(1, 5)] + [f'regime_change_{i}' for i in range(2, 5)], axis=1, inplace=True)
+
+    print(group)
     
     return group
 
@@ -58,6 +61,8 @@ normalizer = Normalize()
 # Apply rescaling and normalization
 rescaled_data = rescaler.rescale(polity5)
 normalized_data = normalizer.normalize(polity5)
+
+print(rescaled_data)
 
 # Convert numpy arrays back to dataframes and reattach 'country' and 'year'
 rescaled_df = pd.DataFrame(rescaled_data, columns=polity5.columns.drop(['country', 'year']))
