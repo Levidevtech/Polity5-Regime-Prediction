@@ -1,5 +1,5 @@
 import pandas as pd
-import numpy
+import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 
 class Rescaler:
@@ -17,14 +17,33 @@ class Rescaler:
         #shift data
         shifted_data = excluded_data - min_values
 
+        # Save 'year' and 'country' columns for later
+        year_and_country = polity5[['year', 'country']]
+
+
         #rescale data 
         scaler = MinMaxScaler(feature_range=(0, 1))
         rescaledX = scaler.fit_transform(shifted_data)
 
         #unscaled version
         unscaled = scaler.inverse_transform(rescaledX)
+
+        # Include 'year' and 'country' columns in the rescaled DataFrame
+        rescaled_df = pd.DataFrame(data=rescaledX, columns=shifted_data.columns)
+        rescaled_df[['year', 'country']] = year_and_country
         
-        return rescaledX
+
+        # Summarize transformed data
+        np.set_printoptions(precision=2)
+        print("Rescaled Data:")
+        print(rescaled_df.head(6))
+        print("\nUnscaled Data:")
+        print(unscaled[0:6, :])
+        print("\nOriginal Shifted Data:")
+        print(shifted_data.head(6))
+
+        
+        return rescaled_df
 
         # summarize transformed data
         numpy.set_printoptions(precision=2)
