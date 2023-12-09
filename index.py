@@ -32,27 +32,6 @@ def split_data_by_country_year(data):
         y_test.append(y_te)
     return pd.concat(X_train), pd.concat(X_test), pd.concat(y_train), pd.concat(y_test)
 
-
-data = pd.read_csv('polity5_dataset.csv')
-data = data.drop(['Unnamed: 0', 'cyear', 'scode', 'country', 'flag', 'polity', 'p5', 'bprec', 'byear', 'bday', 'bmonth', 'eday', 'eyear', 'eprec', 'prior'], axis=1)
-data = data.fillna(0)
-data['year'] = data['year'].astype(int)
-
-data['variance'] = data.apply(lambda row: calculate_variance(row, data), axis=1)
-
-mean_var = data['variance'].mean()
-std_var = data['variance'].std()
-
-lower_threshold = mean_var - std_var
-mid_lower_threshold = mean_var - (std_var / 2)
-mid_upper_threshold = mean_var + (std_var / 2) - 1
-upper_threshold = mean_var + std_var
-
-print('Lower threshold: {}'.format(lower_threshold))
-print('Mid lower threshold: {}'.format(mid_lower_threshold))
-print('Mid upper threshold: {}'.format(mid_upper_threshold))
-print('Upper threshold: {}'.format(upper_threshold))
-
 def categorize_stability(var):
     if var < lower_threshold:
         return -2
@@ -65,10 +44,25 @@ def categorize_stability(var):
     else:
         return 2
 
+data = pd.read_csv('polity5_dataset_random_forest.csv')
+# data = data.drop(['Unnamed: 0', 'cyear', 'scode', 'country', 'flag', 'polity', 'p5', 'bprec', 'byear', 'bday', 'bmonth', 'eday', 'eyear', 'eprec', 'prior'], axis=1)
+# data = data.fillna(0)
+# data['year'] = data['year'].astype(int)
+# data['variance'] = data.apply(lambda row: calculate_variance(row, data), axis=1)
+
+mean_var = data['variance'].mean()
+std_var = data['variance'].std()
+
+lower_threshold = mean_var - std_var - 1
+mid_lower_threshold = mean_var - (std_var / 2) - 1
+mid_upper_threshold = mean_var + (std_var / 2) - 1
+upper_threshold = mean_var + std_var - 1
+
 data['stability'] = data['variance'].apply(categorize_stability)
 
 data.to_csv('polity5_dataset_random_forest.csv')
 data.drop(['variance'], axis=1, inplace=True)
+
 X = data.drop('stability', axis=1)
 y = data['stability']
 
