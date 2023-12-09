@@ -10,3 +10,5 @@ class Rescaler:
         scaler = MinMaxScaler(feature_range=(0, 1))
         rescaledX = scaler.fit_transform(shifted_data)
         return rescaledX
+    
+

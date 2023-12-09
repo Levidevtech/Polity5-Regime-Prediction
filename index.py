@@ -1,58 +1,81 @@
-# Full code for Random Forest model to predict drastic changes in Polity
-
 import pandas as pd
-import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report
-from sklearn.preprocessing import StandardScaler
+import numpy as np
 
-# Load the dataset
-file_path = 'polity5_dataset.csv'
-polity5_df = pd.read_csv(file_path)
-
-# Handling missing values
-polity5_df.fillna(method='ffill', inplace=True)
-
-# Defining drastic change as a change in 'polity' score by more than 2 points
-polity5_df['change_in_polity'] = polity5_df['polity'].diff().fillna(0)
-polity5_df['drastic_change'] = np.abs(polity5_df['change_in_polity']) > 2
-
-# Selecting features and target variable
-# democ, autoc, polity, polity2, durable, xrreg, xrcomp, xropen, xconst, parreg, parcomp, exrec, exconst, polcomp, change, and regtrans
-features = ['democ', 'autoc', 'polity', 'polity2' , 'xrreg', 'xrcomp', 'xropen', 'xconst', 'parreg', 'parcomp', 'exrec', 'exconst', 'polcomp', 'change' ]
-target = 'drastic_change'
-
-# Splitting the data
-X = polity5_df[features]
-y = polity5_df[target]
-
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-# Standardizing the features
-scaler = StandardScaler()
-X_train_scaled = scaler.fit_transform(X_train)
-X_test_scaled = scaler.transform(X_test)
-
-# Training a Random Forest Classifier
-clf = RandomForestClassifier(n_estimators=100, random_state=42)
-clf.fit(X_train_scaled, y_train)
-
-# Predicting and evaluating the model
-y_pred = clf.predict(X_test_scaled)
-report = classification_report(y_test, y_pred)
-
-print(report)
-
-# Predict the probability of drastic change for a country
-# Get the data for the country
-country_df = polity5_df[polity5_df['country'] == 'India']
-# Get the features
-country_features = country_df[features]
-# Standardize the features
-country_features_scaled = scaler.transform(country_features)
-# Predict the probability of drastic change
-prob = clf.predict_proba(country_features_scaled)[0][1]
-print("Probability of drastic change:", prob)
+def calculate_variance(row, data):
+    year_range = range(int(row['year'])-2, int(row['year'])+2)
+    relevant_data = data[(data['ccode'] == row['ccode']) & (data['year'].isin(year_range))]
+    variance = relevant_data['polity2'].var()
+    slope = np.polyfit(relevant_data['year'], relevant_data['polity2'], 1)[0]
+    value = (variance * np.sign(slope)).round(2)
+    
+    # if value == -0.0, return 0.0
+    if value == 0.0 or value == -0.0:
+        return 0.0
+    
+    return value
+    
+def split_data_by_country_year(data):
+    X_train, X_test, y_train, y_test = [], [], [], []
+    for _, group_data in data.groupby('ccode'):
+        group_data_sorted = group_data.sort_values('year')
+        split_index = int(len(group_data_sorted) * 0.7)
+        X_tr, X_te = group_data_sorted.iloc[:split_index, :], group_data_sorted.iloc[split_index:, :]
+        y_tr, y_te = X_tr['stability'], X_te['stability']
+        X_tr = X_tr.drop(['stability'], axis=1)
+        X_te = X_te.drop(['stability'], axis=1)
+        X_train.append(X_tr)
+        X_test.append(X_te)
+        y_train.append(y_tr)
+        y_test.append(y_te)
+    return pd.concat(X_train), pd.concat(X_test), pd.concat(y_train), pd.concat(y_test)
 
 
+data = pd.read_csv('polity5_dataset.csv')
+data = data.drop(['Unnamed: 0', 'cyear', 'scode', 'country', 'flag', 'polity', 'p5', 'bprec', 'byear', 'bday', 'bmonth', 'eday', 'eyear', 'eprec', 'prior'], axis=1)
+data = data.fillna(0)
+data['year'] = data['year'].astype(int)
+
+data['variance'] = data.apply(lambda row: calculate_variance(row, data), axis=1)
+
+mean_var = data['variance'].mean()
+std_var = data['variance'].std()
+
+lower_threshold = mean_var - std_var
+mid_lower_threshold = mean_var - (std_var / 2)
+mid_upper_threshold = mean_var + (std_var / 2) - 1
+upper_threshold = mean_var + std_var
+
+print('Lower threshold: {}'.format(lower_threshold))
+print('Mid lower threshold: {}'.format(mid_lower_threshold))
+print('Mid upper threshold: {}'.format(mid_upper_threshold))
+print('Upper threshold: {}'.format(upper_threshold))
+
+def categorize_stability(var):
+    if var < lower_threshold:
+        return -2
+    elif lower_threshold <= var < mid_lower_threshold:
+        return -1
+    elif mid_lower_threshold <= var < mid_upper_threshold:
+        return 0
+    elif mid_upper_threshold <= var < upper_threshold:
+        return 1
+    else:
+        return 2
+
+data['stability'] = data['variance'].apply(categorize_stability)
+
+data.to_csv('polity5_dataset_random_forest.csv')
+data.drop(['variance'], axis=1, inplace=True)
+X = data.drop('stability', axis=1)
+y = data['stability']
+
+X_train, X_test, y_train, y_test = split_data_by_country_year(data)
+
+classifier = RandomForestClassifier(random_state=42)
+classifier.fit(X_train, y_train)
+
+y_pred = classifier.predict(X_test)
+print(classification_report(y_test, y_pred))

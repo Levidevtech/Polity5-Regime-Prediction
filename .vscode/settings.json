@@ -1,0 +1,13 @@
+{
+  "files.exclude": {
+    "__pycache__": true,
+    ".vscode": true,
+    ".gitignore": true,
+    "README.md": true,
+    "p5manualv2018.pdf": true,
+    "normalizedOld.py": true,
+    "polity5_cleaned.csv": true,
+    "rescaledOld.py": true,
+    "p5v2018.xls": true
+  }
+}
