@@ -2,9 +2,9 @@ import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, OneHotEncoder, LabelEncoder
 from sklearn import metrics
-from sklearn.preprocessing import LabelEncoder
+
 
 
 """
@@ -36,27 +36,25 @@ polity5 = pd.read_csv('polity5_cleaned.csv')
 scaler = StandardScaler() #StandardScaler
 le = LabelEncoder()
 
-polity5_scaled = polity5.drop(polity5['country'], axis=1)
+# Encode 'country' using LabelEncoder
+polity5['country'] = le.fit_transform(polity5['country'])
 
-#encode countries
-p5Country = le.fit_transform(polity5['country'])
+# Separate numerical and categorical features
+numerical_features = ['year', 'democ', 'autoc', 'polity', 'polity2', 'durable', 'xrreg', 'xrcomp', 'xropen', 'xconst', 'parreg', 'parcomp', 'exconst', 'regtrans']
+categorical_features = ['country', 'd5', 'sf']
 
-#scale data 
-scaled_data = scaler.fit_transform(polity5_scaled)
+# Apply standard scaling to numerical features
+polity5[numerical_features] = scaler.fit_transform(polity5[numerical_features])
 
-# Create a DataFrame with scaled data
-polity5_scaled_df = pd.DataFrame(scaled_data, columns=polity5_scaled.columns)
-polity5_scaled_df['country'] = p5Country
-
-#seperate dependent variables and independent variables
-x = polity5_scaled_df.drop(['d5'],axis=1)
-y = polity5_scaled_df['d5']
+# Separate dependent variables and independent variables
+X = polity5.drop(['d5'], axis=1)
+y = polity5['d5']
 
 #split data into test and training
-X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
 # create model
-model = LogisticRegression()
+model = LogisticRegression(max_iter=1000)
 
 # Train the model on the training data
 model.fit(X_train, y_train)
