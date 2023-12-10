@@ -2,10 +2,11 @@ import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix
-from sklearn.preprocessing import StandardScaler, OneHotEncoder, LabelEncoder
+from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn import metrics
-
-
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.calibration import calibration_curve
 
 """
 Input variables are the following: 
@@ -60,6 +61,30 @@ model = LogisticRegression(max_iter=1000)
 model.fit(X_train, y_train)
 y_pred = model.predict(X_test)
 
+# Obtain predicted probabilities on the test set
+y_probs = model.predict_proba(X_test)[:, 1]
+residuals = y_test - y_probs
+
+# Create a calibration plot
+prob_true, prob_pred = calibration_curve(y_test, y_probs, n_bins=10)
+
+# Plotting the calibration curve
+plt.plot(prob_pred, prob_true, marker='o', label='Logistic Regression')
+plt.plot([0, 1], [0, 1], linestyle='--', color='gray', label='Perfectly Calibrated')  # <-- Add this line
+plt.xlabel('Mean Predicted Probability')
+plt.ylabel('Fraction of Positives')
+plt.title('Calibration Plot')
+plt.legend()
+plt.show()
+
+# Plot residuals
+plt.figure(figsize=(8, 6))
+sns.residplot(x=y_probs, y=residuals, lowess=True, color='blue')
+plt.title('Residual Plot for Logistic Regression')
+plt.xlabel('Predicted Probabilities')
+plt.ylabel('Residuals')
+plt.show()
+
 # Generate a confusion matrix
 cm = confusion_matrix(y_test, y_pred)
 
@@ -79,3 +104,7 @@ print(cm)
 
 print("Performance of the Rescaled Model:")
 evaluate_model(model, X_test, y_test)
+
+# Calculate Log-Loss
+logloss = metrics.log_loss(y_test, y_probs)
+print(f'Log-Loss: {logloss}')
