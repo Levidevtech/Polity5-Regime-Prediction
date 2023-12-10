@@ -1,11 +1,10 @@
 import pandas as pd
-import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.preprocessing import StandardScaler
-from rescaled import Rescaler
 from sklearn import metrics
+from sklearn.preprocessing import LabelEncoder
 
 
 """
@@ -35,25 +34,36 @@ polity5 = pd.read_csv('polity5_cleaned.csv')
 
 # Initialize Rescaler 
 scaler = StandardScaler() #StandardScaler
+le = LabelEncoder()
+
+polity5_scaled = polity5.drop(polity5['country'], axis=1)
+
+#encode countries
+p5Country = le.fit_transform(polity5['country'])
+
+#scale data 
+scaled_data = scaler.fit_transform(polity5_scaled)
+
+# Create a DataFrame with scaled data
+polity5_scaled_df = pd.DataFrame(scaled_data, columns=polity5_scaled.columns)
+polity5_scaled_df['country'] = p5Country
 
 #seperate dependent variables and independent variables
-x = polity5.drop(['d5', 'year', 'country'],axis=1)
-y = polity5['d5']
+x = polity5_scaled_df.drop(['d5'],axis=1)
+y = polity5_scaled_df['d5']
 
 #split data into test and training
 X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
-
-# Apply scaling to the independent variables
-X_train_scaled = scaler.fit_transform(X_train)
-X_test_scaled = scaler.transform(X_test)
 
 # create model
 model = LogisticRegression()
 
 # Train the model on the training data
-model.fit(X_train_scaled, y_train)
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)
 
-y_pred = model.predict(X_test_scaled)
+# Generate a confusion matrix
+cm = confusion_matrix(y_test, y_pred)
 
 # Evaluate the model
 accuracy = metrics.accuracy_score(y_test, y_pred)
@@ -64,6 +74,10 @@ recall = metrics.recall_score(y_test, y_pred)
 def evaluate_model(model, X_test, y_test):
     y_pred = model.predict(X_test)
     print(classification_report(y_test, y_pred))
+
+# Display the confusion matrix
+print("Confusion Matrix:")
+print(cm)
 
 print("Performance of the Rescaled Model:")
 evaluate_model(model, X_test, y_test)
