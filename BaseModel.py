@@ -2,11 +2,12 @@ import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix
-from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.preprocessing import MinMaxScaler, LabelEncoder
 from sklearn import metrics
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.calibration import calibration_curve
+import statsmodels.api as sm
 
 """
 Input variables are the following: 
@@ -34,7 +35,7 @@ file_path = 'polity5_cleaned.csv'
 polity5 = pd.read_csv('polity5_cleaned.csv')
 
 # Initialize Rescaler 
-scaler = StandardScaler() #StandardScaler
+scaler = MinMaxScaler() #StandardScaler
 le = LabelEncoder()
 
 # Encode 'country' using LabelEncoder
@@ -53,6 +54,30 @@ y = polity5['d5']
 
 #split data into test and training
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+x_new = sm.add_constant(X)
+
+# Fit logistic regression model
+logit_model = sm.Logit(y, x_new)
+result = logit_model.fit()
+
+# Obtain partial residuals
+partial_resid = result.resid_pearson
+
+# Create partial residual plots for each independent variable
+for i, var in enumerate(X.columns):
+    if var == 'const':  # Skip the constant term
+        continue
+
+    plt.figure(figsize=(8, 4))
+    plt.scatter(X[var], partial_resid, alpha=0.5)
+    plt.title(f'Partial Residual Plot for {var}')
+    plt.xlabel(var)
+    plt.ylabel('Partial Residuals')
+    plt.show()
+
+# Display the summary of the logistic regression model
+print(result.summary())
 
 # create model
 model = LogisticRegression(max_iter=1000)
