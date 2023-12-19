@@ -145,10 +145,6 @@ evaluate_model(model, X_test, y_test)
 # Calculate Log-Loss
 logloss = metrics.log_loss(y_test, y_probs)
 print(f'Log-Loss: {logloss}')
-
-
-
-
 model.fit(X_train_poly, y_train)
 # Evaluate the model
 y_pred = model.predict(X_test_poly)
