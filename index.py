@@ -45,10 +45,10 @@ def categorize_stability(var):
         return 2
 
 data = pd.read_csv('polity5_dataset_random_forest.csv')
-# data = data.drop(['Unnamed: 0', 'cyear', 'scode', 'country', 'flag', 'polity', 'p5', 'bprec', 'byear', 'bday', 'bmonth', 'eday', 'eyear', 'eprec', 'prior'], axis=1)
-# data = data.fillna(0)
-# data['year'] = data['year'].astype(int)
-# data['variance'] = data.apply(lambda row: calculate_variance(row, data), axis=1)
+data = data.drop(['Unnamed: 0', 'cyear', 'scode', 'country', 'flag', 'polity', 'p5', 'bprec', 'byear', 'bday', 'bmonth', 'eday', 'eyear', 'eprec', 'prior'], axis=1)
+data = data.fillna(0)
+data['year'] = data['year'].astype(int)
+data['variance'] = data.apply(lambda row: calculate_variance(row, data), axis=1)
 
 mean_var = data['variance'].mean()
 std_var = data['variance'].std()
