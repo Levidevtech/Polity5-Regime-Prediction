@@ -2,8 +2,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 
-file_path = 'p5v2018.xls'
-df = pd.read_excel(file_path)
+file_path = 'polity5_cleaned.csv'
+df = pd.read_csv(file_path)
 
 def scatterplot(independentvariable):
     #dependent value
@@ -33,5 +33,5 @@ def scatterplot(independentvariable):
 listofvariables = [df['xrreg'], df['xrcomp'], df['xropen'], df['xconst']]
 secondlist = [df['parreg'], df['parcomp'], df['exrec'], df['exconst']]
 last = df['polcomp']
-scatterplot(listofvariables)
+scatterplot(last)
 

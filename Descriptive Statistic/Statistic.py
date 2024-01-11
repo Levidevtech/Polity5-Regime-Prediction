@@ -1,12 +1,11 @@
 import pandas as pd
 import statistics as st
 
-file_path = 'p5v2018.xls'
-df = pd.read_excel(file_path)
+file_path = 'polity5_cleaned.csv'
+df = pd.read_csv(file_path)
 
 #central tendencies mean, median and mode
 def CTinfo(variable):
-   pd.set_option('display.max_rows', None)
    print(f"Variable: {variable.name}")
    print(f"Mean: {st.mean(variable)}")
    print(f"Median: {st.median(variable)}")

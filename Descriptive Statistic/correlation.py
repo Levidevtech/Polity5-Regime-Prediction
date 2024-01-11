@@ -1,7 +1,7 @@
 import pandas as pd
 
-file_path = 'p5v2018.xls'
-df = pd.read_excel(file_path)
+file_path = 'polity5_cleaned.csv'
+df = pd.read_csv(file_path)
 
 #indepedent value
 x = [df['xrreg'], df['xrcomp'], df['xropen'], df['xconst'], df['parreg'], df['parcomp'], df['exrec'], df['exconst'], df['polcomp']]

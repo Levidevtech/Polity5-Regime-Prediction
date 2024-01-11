@@ -1,17 +1,17 @@
 import pandas as pd
 
-class Preperation:
-    file_path = 'polity5_dataset.csv'
+class Cleaning:
+    file_path = 'p5v2018.xls'
 
-    def Prepare_Data(self):
+    def clean_Dataset(self):
         # Load dataset
-        p5 = pd.read_csv(self.file_path)
+        p5 = pd.read_excel(self.file_path)
         
         # Prepare data 
         p5['regtrans'].fillna(0, inplace=True)
         p5['sf'].fillna(0, inplace=True)
         p5['d5'].fillna(0, inplace=True)
-        p5.drop(['eprec', 'interim', 'bprec', 'fragment', 'prior', 'post', 'change', 'exrec', 'polcomp', 'emonth', 'eday', 'eyear', 'bmonth', 'bday', 'byear'], axis=1, inplace=True)
+        p5.drop(['eprec', 'interim', 'bprec', 'fragment', 'prior', 'post', 'change', 'emonth', 'eday', 'eyear', 'bmonth', 'bday', 'byear', 'year', 'country', 'scode', 'flag'], axis=1, inplace=True)
         p5.dropna(subset=['polity2'], inplace=True)
         self.fill_durable(p5)
         print(p5.isnull().sum())
@@ -36,5 +36,5 @@ class Preperation:
                 current_value += 1
                 last_polity_score = polity_score
 
-p = Preperation()
-p.Prepare_Data()
+p = Cleaning()
+p.clean_Dataset()
