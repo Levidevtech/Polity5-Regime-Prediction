@@ -32,19 +32,14 @@ regtrans : an indicator how heavy the regime shift was with an range of -2 to +3
 
 #load data
 file_path = 'polity5_cleaned.csv'
-polity5 = pd.read_csv('polity5_cleaned.csv')
-
+polity5 = pd.read_csv('polity5_cleanedWithoutEXRECandPOLCOMP.csv')
 
 # Initialize Rescaler 
 scaler = MinMaxScaler() #StandardScaler
-le = LabelEncoder()
-
-# Encode 'country' using LabelEncoder
-polity5['country'] = le.fit_transform(polity5['country'])
 
 # Separate numerical and categorical features
-numerical_features = ['year', 'democ', 'autoc', 'polity', 'polity2', 'durable', 'xrreg', 'xrcomp', 'xropen', 'xconst', 'parreg', 'parcomp', 'exconst', 'regtrans']
-categorical_features = ['country', 'd5', 'sf']
+numerical_features = ['cyear', 'ccode' ,'democ', 'autoc', 'polity', 'polity2', 'durable', 'xrreg', 'xrcomp', 'xropen', 'xconst', 'parreg', 'parcomp', 'exconst', 'regtrans']
+categorical_features = ['d5', 'sf']
 
 # Apply polynomial transformation
 degree = 3  # You can change this to any desired degree
