@@ -2,6 +2,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report
+import argparse
 import numpy as np
 
 def calculate_variance(row, data):
@@ -45,7 +46,20 @@ def categorize_stability(var):
     else:
         return 2
 
+
+# read parameters from command line
+parser = argparse.ArgumentParser()
+parser.add_argument('--ccode', help='ccode to train on')
+parser.add_argument('--country', help='country to predict')
+args = parser.parse_args()
+
+
+
 data = pd.read_csv('polity5_dataset.csv')
+
+if args.ccode:
+    data = data[data['ccode'] == int(args.ccode)]
+
 data = data.drop(['Unnamed: 0', 'cyear', 'scode', 'country', 'flag', 'polity', 'p5', 'bprec', 'byear', 'bday', 'bmonth', 'eday', 'eyear', 'eprec', 'prior'], axis=1)
 data = data.fillna(0)
 data['year'] = data['year'].astype(int)
@@ -74,3 +88,36 @@ classifier.fit(X_train, y_train)
 
 y_pred = classifier.predict(X_test)
 print(classification_report(y_test, y_pred))
+
+if args.country:
+    # predict for a specific country
+    country_data = data[data['ccode'] == int(args.country)]
+    country_data = country_data.drop(['stability'], axis=1)
+    country_data = country_data.sort_values('year')
+    country_data = country_data.iloc[-1, :]
+    country_data = country_data.drop(['ccode', 'year'])
+    country_data = country_data.values.reshape(1, -1)
+    prediction = classifier.predict(country_data)
+    print(prediction)
+
+    # visualize the decision tree
+    from sklearn import tree
+    import graphviz
+    dot_data = tree.export_graphviz(classifier.estimators_[0], out_file=None, 
+                         feature_names=X.columns,  
+                         class_names=['-2', '-1', '0', '1', '2'],  
+                         filled=True, rounded=True,  
+                         special_characters=True)
+    graph = graphviz.Source(dot_data)
+    graph.render("decision_tree")
+
+    # visualize the prediction  
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    sns.set()
+    plt.figure(figsize=(10, 5))
+    plt.plot(country_data[0], label='actual')
+    plt.plot(prediction[0], label='predicted')
+    plt.legend()
+    plt.show()
+    
