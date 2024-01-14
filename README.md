@@ -11,16 +11,16 @@ To run the code you need the following packages:
 - matplotlib ( pip install matplotlib )
 
 To run the code, open a terminal and navigate to the folder where the code is located. Then run the following command:
-```python main.py```
+```python RandomForest.py```
 
 The code will then run and print the results to the terminal. If a country code is provided, a graph will be shown with the predicted and actual values for that country like:
-```python main.py --country=210```
+```python RandomForest.py --country=210```
 
 If you want to train the model on a specific country, you can use the following command:
-```python main.py --ccode=210```
+```python RandomForest.py --ccode=210```
 
 If you want to see the decision tree, you can use the following command with the max depth of the tree:
-```python main.py --depth=3```
+```python RandomForest.py --depth=3```
 
 
               precision    recall  f1-score   support
