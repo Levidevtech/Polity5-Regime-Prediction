@@ -149,8 +149,6 @@ data.drop(['variance'], axis=1, inplace=True)
 # split data into training and testing sets
 X_train, X_test, y_train, y_test = split_data_by_country_year(data)
 
-
-
 # specify the path to the model file
 model_file_path = 'random_forest_model.pkl'
 
