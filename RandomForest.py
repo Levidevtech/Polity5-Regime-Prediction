@@ -13,8 +13,6 @@ mid_lower_weight = 3.3
 mid_upper_weight = -2
 upper_weight = -1.5
 
-
-
 def calculate_variance(row, data):
     # This function calculates the variance of the polity2 values of a country in a certain year range
     year_range = range(int(row['year'])-years, int(row['year'])+years+1)
@@ -65,24 +63,17 @@ parser.add_argument('--country', help='country to predict')
 parser.add_argument('--depth', help='depth of the decision tree')
 args = parser.parse_args()
 
-# read data from excel file and convert to csv
 xls = pandas.read_excel('p5v2018.xls')
 xls.to_csv('polity5_dataset.csv')
-
-# read data from csv file
 data = pandas.read_csv('polity5_dataset.csv')
 
 # filter data by ccode if provided
 if args.ccode:
     data = data[data['ccode'] == int(args.ccode)]
 
-# drop unnecessary columns
+# clean and filter data
 data = data.drop(['Unnamed: 0', 'cyear', 'scode', 'country', 'flag', 'polity', 'p5', 'bprec', 'byear', 'bday', 'bmonth', 'eday', 'eyear', 'eprec', 'prior'], axis=1)
-
-# fill missing values with 0
 data = data.fillna(0)
-
-# convert polity2 to int
 data['year'] = data['year'].astype(int)
 
 # calculate variance for each country in each year
