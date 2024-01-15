@@ -128,10 +128,25 @@ if args.country:
     y_pred = classifier.predict(country_data)
     country_data['stability'] = y_pred
     country_data = country_data.sort_values('year')
+
+
+
+
     plt.plot(country_data['year'], country_data['stability'])
     plt.scatter(country_data['year'], country_data['stability'])
-    plt.scatter(2018, y_pred[0], color='red')
-    plt.scatter(2018, country_data['stability'].iloc[-1], color='green')
+    plt.scatter(2018, y_pred[0], color='orange')
+    plt.scatter(2018, country_data['stability'].iloc[-1], color='orange')
+
+    # Add legend
+    plt.legend(['Stability', 'Actual Stability', 'Predicted Stability 2018',])
+
+    # Add axis labels
+    plt.xlabel('Year')
+    plt.ylabel('Stability')
+
+    # Set y-axis ticks
+    plt.yticks([-2, -1, 0, 1, 2])
+
     plt.show()
 
 
