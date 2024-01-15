@@ -1,4 +1,3 @@
-import pandas as pd
 from sklearn.metrics import accuracy_score
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report
@@ -6,58 +5,19 @@ import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas
-import pickle
-import os
 from sklearn import tree
 
-# check if all the necessary packages are installed, if not install them
-try:
-    import pandas
-except ImportError:
-    os.system('pip install pandas')
-    import pandas
-
-try:
-    from sklearn.metrics import accuracy_score
-except ImportError:
-    os.system('pip install scikit-learn')
-    from sklearn.metrics import accuracy_score
-
-try:
-    from sklearn.ensemble import RandomForestClassifier
-except ImportError:
-    os.system('pip install scikit-learn')
-    from sklearn.ensemble import RandomForestClassifier
-
-try:
-    from sklearn.metrics import classification_report
-except ImportError:
-    os.system('pip install scikit-learn')
-    from sklearn.metrics import classification_report
-
-try:
-    import argparse
-except ImportError:
-    os.system('pip install argparse')
-    import argparse
-
-try:
-    import numpy as np
-except ImportError:
-    os.system('pip install numpy')
-    import numpy as np
-
-try:
-    import matplotlib.pyplot as plt
-except ImportError:
-    os.system('pip install matplotlib')
-    import matplotlib.pyplot as plt
+years = 1
+lower_weight = 1.5
+mid_lower_weight = 3.3
+mid_upper_weight = -2
+upper_weight = -1.5
 
 
 
-# This function calculates the variance of the polity2 score for a country in a 4 year range
 def calculate_variance(row, data):
-    year_range = range(int(row['year'])-2, int(row['year'])+2)
+    # This function calculates the variance of the polity2 values of a country in a certain year range
+    year_range = range(int(row['year'])-years, int(row['year'])+years+1)
     relevant_data = data[(data['ccode'] == row['ccode']) & (data['year'].isin(year_range))]
     variance = relevant_data['polity2'].var()
     slope = np.polyfit(relevant_data['year'], relevant_data['polity2'], 1)[0]
@@ -68,9 +28,9 @@ def calculate_variance(row, data):
     
     return value
     
-# This function splits the data into training and testing sets by country and year
-# It returns a list of training sets and a list of testing sets
 def split_data_by_country_year(data):
+    # This function splits the data into training and testing sets by country and year
+    # It returns a list of training sets and a list of testing sets
     X_train, X_test, y_train, y_test = [], [], [], []
     for _, group_data in data.groupby('ccode'):
         group_data_sorted = group_data.sort_values('year')
@@ -84,10 +44,10 @@ def split_data_by_country_year(data):
         y_train.append(y_tr)
         y_test.append(y_te)
         
-    return pd.concat(X_train), pd.concat(X_test), pd.concat(y_train), pd.concat(y_test)
+    return pandas.concat(X_train), pandas.concat(X_test), pandas.concat(y_train), pandas.concat(y_test)
 
-# This function categorizes the variance into 5 categories with respect to the mean and standard deviation
 def categorize_stability(var):
+    # This function categorizes the variance into 5 categories with respect to the mean and standard deviation
     if var < lower_threshold:
         return -2
     elif lower_threshold <= var < mid_lower_threshold:
@@ -99,7 +59,6 @@ def categorize_stability(var):
     else:
         return 2
 
-# read parameters from command line if provided
 parser = argparse.ArgumentParser()
 parser.add_argument('--ccode', help='ccode to train on')
 parser.add_argument('--country', help='country to predict')
@@ -111,7 +70,7 @@ xls = pandas.read_excel('p5v2018.xls')
 xls.to_csv('polity5_dataset.csv')
 
 # read data from csv file
-data = pd.read_csv('polity5_dataset.csv')
+data = pandas.read_csv('polity5_dataset.csv')
 
 # filter data by ccode if provided
 if args.ccode:
@@ -132,39 +91,21 @@ data['variance'] = data.apply(lambda row: calculate_variance(row, data), axis=1)
 # categorize variance into 5 categories
 mean_var = data['variance'].mean()
 std_var = data['variance'].std()
-lower_threshold = mean_var - std_var - 1
-mid_lower_threshold = mean_var - (std_var / 2) - 1
-mid_upper_threshold = mean_var + (std_var / 2) - 1
-upper_threshold = mean_var + std_var - 1
-
+lower_threshold = (mean_var - std_var) + lower_weight
+mid_lower_threshold = (mean_var - (std_var / 2)) + mid_lower_weight
+mid_upper_threshold = (mean_var + (std_var / 2)) + mid_upper_weight
+upper_threshold = (mean_var + std_var) + upper_weight
 
 data['stability'] = data['variance'].apply(categorize_stability)
 
-# save data to csv file
 data.to_csv('polity5_dataset_random_forest.csv')
-
-# drop unnecessary columns
 data.drop(['variance'], axis=1, inplace=True)
 
 # split data into training and testing sets
 X_train, X_test, y_train, y_test = split_data_by_country_year(data)
 
-# specify the path to the model file
-model_file_path = 'random_forest_model.pkl'
-
-# check if the model file exists
-if os.path.exists(model_file_path):
-    # load the model from the file
-    with open(model_file_path, 'rb') as file:
-        classifier = pickle.load(file)
-else:
-    # train the model
-    classifier = RandomForestClassifier(random_state=42)
-    classifier.fit(X_train, y_train)
-
-    # save the model to a file
-    with open(model_file_path, 'wb') as file:
-        pickle.dump(classifier, file)
+classifier = RandomForestClassifier(random_state=42)
+classifier.fit(X_train, y_train)
 
 # show the decision tree up to a certain depth
 if args.depth:

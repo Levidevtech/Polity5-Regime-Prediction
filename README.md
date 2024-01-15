@@ -9,6 +9,9 @@ To run the code you need the following packages:
 - sklearn ( pip install scikit-learn )
 - numpy ( pip install numpy )
 - matplotlib ( pip install matplotlib )
+- xlrd ( pip install xlrd )
+
+Either use python or python3 depending on your system.
 
 To run the code, open a terminal and navigate to the folder where the code is located. Then run the following command:
 ```python RandomForest.py```
@@ -35,6 +38,7 @@ If you want to see the decision tree, you can use the following command with the
    macro avg       0.64      0.47      0.53      5362
 weighted avg       0.92      0.93      0.92      5362
 
+Example of a print out from random forest.
 
 
 
