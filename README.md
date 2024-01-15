@@ -10,6 +10,8 @@ To run the code you need the following packages:
 - numpy ( pip install numpy )
 - matplotlib ( pip install matplotlib )
 - xlrd ( pip install xlrd )
+- seaborn ( pip install seaborn )
+- statsmodels ( pip install statsmodels )
 
 Either use python or python3 depending on your system.
 
@@ -41,7 +43,10 @@ weighted avg       0.92      0.93      0.92      5362
 Example of a print out from random forest.
 
 
+Logistic regression:
 
+To run:
+```python BaseModelOfLogistic.py```
 
 
 
