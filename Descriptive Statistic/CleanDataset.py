@@ -11,7 +11,7 @@ class Cleaning:
         p5['regtrans'].fillna(0, inplace=True)
         p5['sf'].fillna(0, inplace=True)
         p5['d5'].fillna(0, inplace=True)
-        p5.drop(['eprec', 'interim', 'bprec', 'fragment', 'prior', 'post', 'change', 'emonth', 'eday', 'eyear', 'bmonth', 'bday', 'byear', 'year', 'country', 'scode', 'flag'], axis=1, inplace=True)
+        p5.drop(['eprec', 'interim', 'bprec', 'fragment', 'prior', 'post', 'change', 'emonth', 'eday', 'eyear', 'bmonth', 'bday', 'byear', 'year', 'country', 'scode', 'flag', 'exrec', 'polcomp'], axis=1, inplace=True)
         p5.dropna(subset=['polity2'], inplace=True)
         self.fill_durable(p5)
         print(p5.isnull().sum())

@@ -94,11 +94,14 @@ model.fit(X_train, y_train)
 y_pred = model.predict(X_test)
 
 # Obtain predicted probabilities on the test set
+y_probs_poly = model.predict_proba(X_test_poly)[:, 1]
 y_probs = model.predict_proba(X_test)[:, 1]
 residuals = y_test - y_probs
+residuals_poly = y_test - y_probs_poly
 
 # Create a calibration plot
 prob_true, prob_pred = calibration_curve(y_test, y_probs, n_bins=10)
+prob_true_poly, prob_pred_poly = calibration_curve(y_test, y_probs_poly, n_bins=10)
 
 # Plotting the calibration curve
 plt.plot(prob_pred, prob_true, marker='o', label='Logistic Regression')
@@ -134,16 +137,39 @@ def evaluate_model(model, X_test, y_test):
 print("Confusion Matrix:")
 print(cm)
 
-print("Performance of the Rescaled Model:")
+print("Performance of the Model:")
 evaluate_model(model, X_test, y_test)
 
 # Calculate Log-Loss
 logloss = metrics.log_loss(y_test, y_probs)
 print(f'Log-Loss: {logloss}')
 model.fit(X_train_poly, y_train)
+
+
 # Evaluate the model
 y_pred = model.predict(X_test_poly)
 print("Confusion Matrix:")
 print(confusion_matrix(y_test, y_pred))
 print("\nClassification Report:")
 print(classification_report(y_test, y_pred))
+# Calculate Log-Loss
+logloss = metrics.log_loss(y_test, y_pred)
+print(f'Log-Loss: {logloss}')
+
+
+# Plotting the calibration curve
+plt.plot(prob_pred_poly, prob_true_poly, marker='o', label='Logistic Regression')
+plt.plot([0, 1], [0, 1], linestyle='--', color='gray', label='Perfectly Calibrated')  # <-- Add this line
+plt.xlabel('Mean Predicted Probability')
+plt.ylabel('Fraction of Positives')
+plt.title('Calibration Plot Polynominal')
+plt.legend() 
+plt.show()
+
+# Plot residuals
+plt.figure(figsize=(8, 6))
+sns.residplot(x=y_probs_poly, y=residuals_poly, lowess=True, color='blue')
+plt.title('Polynominal Residual Plot for Logistic Regression')
+plt.xlabel('Predicted Probabilities')
+plt.ylabel('Residuals')
+plt.show()
